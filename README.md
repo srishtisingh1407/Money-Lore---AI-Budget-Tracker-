@@ -1,48 +1,101 @@
-# ☕ Spending Tea
+# 💸 Money Lore
 
-### "Your money has receipts. Your AI should too."
+### Where did my money go?
 
-Spending Tea is an AI-native personal finance assistant designed to handle messy transaction data (like Google Pay exports), interpret personal shorthand notes, and deliver verified summaries without hallucinating calculations.
+**Money Lore** is an AI-native personal finance analyst that turns messy financial activity into insights you can actually understand.
 
-## The Problem
-When asking general-purpose LLMs about personal finance data, they often:
-1. **Hallucinate arithmetic**: confidently stating wrong totals.
-2. **Fail on messy data**: misinterpreting duplicates, self-transfers, or refunds.
-3. **Over-assume**: guessing categories for vague notes instead of acknowledging uncertainty.
+Instead of manually entering every transaction, Money Lore is designed to connect to your email, extract transaction information from receipts and payment notifications, categorize spending, and use AI to explain your financial habits.
 
-## The Solution
-Spending Tea solves this with a structured, deterministic classification and aggregation pipeline:
+> Your money has lore. Money Lore tells you what it is.
 
-```mermaid
-graph TD
-    A[GPay CSV Import] --> B[Normalization Pipeline]
-    B --> C[Shortcut Matching]
-    C --> D[Keyword Matching]
-    D --> E[AI Classification Fallback]
-    E --> F[(PostgreSQL Database)]
-    F --> G[FastAPI APIs]
-    G --> H[Next.js Frontend]
-    G --> I[AI Agent & Tools]
-```
+---
 
-1. **Deterministic Ingestion**: Cascading classifier checks user-defined shortcuts and keyword rules before resorting to AI context maps.
-2. **Trust Rating System**: Calculates an overall score (Completeness, Freshness, Category Confidence, Duplicates Risk) to measure source reliability.
-3. **AI Abstention**: Refuses to output numbers when uncategorized items exceed thresholds, prompting reviews first.
-4. **Calculations in SQL/Python**: Uses typed tools (`get_category_spending`, etc.) to run queries, ensuring 100% mathematical correctness.
+## ✨ What is Money Lore?
 
-## Stack
-- **Frontend**: Next.js 15+, Tailwind CSS, TypeScript, Recharts
-- **Backend**: Python FastAPI, SQLAlchemy, PostgreSQL
-- **AI Agent**: Structured outputs, tool calling, trust validators
+Most budgeting apps tell you **what you spent**.
 
-## Getting Started
+Money Lore tries to tell you **why you keep spending it — and what you can do about it.**
 
-1. Set up your environment variables:
-   ```bash
-   cp .env.example .env
-   ```
-2. Launch the services:
-   ```bash
-   docker-compose up --build
-   ```
-3. Open `http://localhost:3000` to start tracking.
+It combines automated transaction extraction, spending analytics, visualizations, and AI-powered financial insights into one dashboard.
+
+### Core ideas
+
+- 📩 **Email-powered expense tracking**
+  - Extract transactions from payment and purchase notifications.
+  - Reduce manual expense entry.
+
+- 🧠 **AI Financial Analyst**
+  - Analyze spending patterns.
+  - Identify unusual or recurring expenses.
+  - Suggest areas where you could save.
+
+- 📊 **Spending Analytics**
+  - Weekly and monthly spending breakdowns.
+  - Category-wise expense analysis.
+  - Budget allocation and spending trends.
+
+- ☕ **Manual Spending Notes**
+  - Quickly add expenses that don't arrive through email.
+  - Example:
+    > `T - ₹120`
+    
+    Money Lore can interpret this as tea/snacks spending and add it to your financial history.
+
+- 💀 **Financial Lore**
+  - Instead of giving you boring financial warnings, Money Lore gives you personality-driven insights.
+
+  > "You spent ₹2,400 on tea this month. At this point, you're not drinking tea. You're funding the tea industry."
+
+- 💡 **Savings Recommendations**
+  - AI analyzes your spending and highlights potential savings opportunities.
+  - Recommendations are based on your actual spending behavior.
+
+---
+
+## 🧠 AI-Native Architecture
+
+Money Lore isn't designed as a traditional CRUD expense tracker with AI slapped on top.
+
+The AI is part of the product's reasoning layer.
+
+```text
+                  ┌─────────────────────┐
+                  │       Gmail         │
+                  │ Payment / Receipt   │
+                  │    Notifications    │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │ Transaction Parser  │
+                  │                     │
+                  │ Extract merchant,   │
+                  │ amount, date, type   │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │    PostgreSQL       │
+                  │                     │
+                  │ Transactions        │
+                  │ Categories          │
+                  │ Budgets             │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │    AI Analyst       │
+                  │      Gemini         │
+                  │                     │
+                  │ Pattern detection   │
+                  │ Spending analysis   │
+                  │ Savings insights    │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │   Money Lore UI     │
+                  │                     │
+                  │ Graphs • Budgets    │
+                  │ Insights • Lore     │
+                  └─────────────────────┘
