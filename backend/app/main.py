@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI, Depends, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -262,7 +264,6 @@ def import_csv(file: UploadFile = File(...), db: Session = Depends(get_db)):
     )
 
 # --- GMAIL INTEGRATION ---
-import os
 from app.services.gmail import get_google_auth_url, exchange_code_for_token, fetch_recent_transaction_emails
 from fastapi.responses import RedirectResponse
 
