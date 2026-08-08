@@ -7,10 +7,8 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
 from sqlalchemy.orm import Session
-from app.models import OAuthCredential, Transaction
-from app.schemas import TransactionCreate
+from app.models import OAuthCredential
 import base64
-from app.services.pipeline import run_llm_classification
 from google import genai
 from google.genai import types
 
