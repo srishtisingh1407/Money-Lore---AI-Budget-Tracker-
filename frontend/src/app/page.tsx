@@ -95,7 +95,7 @@
 
 "use client";
 
-import { SignInButton } from "@clerk/nextjs";
+import Link from "next/link";
 import {
   ArrowUpRight,
   Check,
@@ -186,17 +186,13 @@ export default function LandingPage() {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
-          <SignInButton mode="modal">
-            <button className="rounded-full px-5 py-2.5 font-mono text-xs text-[#aaa69e] transition hover:text-white">
+          <Link href="/connect" className="rounded-full px-5 py-2.5 font-mono text-xs text-[#aaa69e] transition hover:text-white">
               LOG IN
-            </button>
-          </SignInButton>
+          </Link>
 
-          <SignInButton mode="modal">
-            <button className="rounded-full border border-[#f5f1e8] bg-[#f5f1e8] px-5 py-2.5 font-mono text-xs font-bold text-black transition hover:bg-[#ff4fd8] hover:text-white hover:border-[#ff4fd8]">
+          <Link href="/connect" className="rounded-full border border-[#f5f1e8] bg-[#f5f1e8] px-5 py-2.5 font-mono text-xs font-bold text-black transition hover:bg-[#ff4fd8] hover:text-white hover:border-[#ff4fd8]">
               START TRACKING →
-            </button>
-          </SignInButton>
+          </Link>
         </div>
 
         <button
@@ -247,15 +243,13 @@ export default function LandingPage() {
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-4">
-                <SignInButton mode="modal">
-                  <button className="group flex items-center gap-3 rounded-full bg-[#ff4fd8] px-6 py-3.5 font-mono text-xs font-bold text-black shadow-[0_0_30px_rgba(255,79,216,.25)] transition hover:scale-[1.02] hover:bg-[#ff75e2]">
+                <Link href="/connect" className="group flex items-center gap-3 rounded-full bg-[#ff4fd8] px-6 py-3.5 font-mono text-xs font-bold text-black shadow-[0_0_30px_rgba(255,79,216,.25)] transition hover:scale-[1.02] hover:bg-[#ff75e2]">
                     OPEN MY MONEY LORE
                     <ArrowUpRight
                       size={16}
                       className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     />
-                  </button>
-                </SignInButton>
+                </Link>
 
                 <a
                   href="#how"
@@ -803,11 +797,9 @@ export default function LandingPage() {
           </p>
 
           <div className="mt-9">
-            <SignInButton mode="modal">
-              <button className="rounded-full bg-[#f5f1e8] px-7 py-4 font-mono text-xs font-bold text-black transition hover:bg-[#77ffbd]">
+            <Link href="/connect" className="rounded-full bg-[#f5f1e8] px-7 py-4 font-mono text-xs font-bold text-black transition hover:bg-[#77ffbd]">
                 START MY MONEY LORE →
-              </button>
-            </SignInButton>
+            </Link>
           </div>
         </div>
       </section>
