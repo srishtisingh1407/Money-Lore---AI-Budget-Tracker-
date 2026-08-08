@@ -1,5 +1,7 @@
 import os
 import datetime
+import html
+import re
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
@@ -91,11 +93,31 @@ def get_gmail_service(db: Session, user_id: str):
     service = build('gmail', 'v1', credentials=creds)
     return service
 
-def fetch_recent_transaction_emails(db: Session, user_id: str, query: str = 'subject:transaction OR subject:receipt'):
+def _decode_body(data: str) -> str:
+    """Decode Gmail's URL-safe base64 payload, including unpadded values."""
+    return base64.urlsafe_b64decode(data + "=" * (-len(data) % 4)).decode("utf-8", errors="replace")
+
+
+def _message_text(payload: dict) -> str:
+    """Collect text from nested Gmail MIME parts (receipts are rarely flat)."""
+    parts = []
+    mime_type = payload.get("mimeType", "")
+    data = payload.get("body", {}).get("data")
+    if data and mime_type in {"text/plain", "text/html"}:
+        text = _decode_body(data)
+        if mime_type == "text/html":
+            text = re.sub(r"<[^>]+>", " ", html.unescape(text))
+        parts.append(text)
+    for part in payload.get("parts", []):
+        parts.append(_message_text(part))
+    return "\n".join(part for part in parts if part).strip()
+
+
+def fetch_recent_transaction_emails(db: Session, user_id: str, query: str = '(receipt OR invoice OR payment OR transaction OR debited OR credited)', max_results: int = 25):
     """Fetch recent emails matching a query"""
     service = get_gmail_service(db, user_id)
     
-    results = service.users().messages().list(userId='me', q=query, maxResults=10).execute()
+    results = service.users().messages().list(userId='me', q=query, maxResults=max_results).execute()
     messages = results.get('messages', [])
     
     parsed_transactions = []
@@ -109,13 +131,7 @@ def fetch_recent_transaction_emails(db: Session, user_id: str, query: str = 'sub
         sender = next((h['value'] for h in headers if h['name'] == 'From'), 'Unknown')
         
         # Get body
-        body = ""
-        if 'parts' in msg['payload']:
-            for part in msg['payload']['parts']:
-                if part['mimeType'] == 'text/plain' and 'data' in part['body']:
-                    body += base64.urlsafe_b64decode(part['body']['data']).decode('utf-8')
-        elif 'body' in msg['payload'] and 'data' in msg['payload']['body']:
-             body = base64.urlsafe_b64decode(msg['payload']['body']['data']).decode('utf-8')
+        body = _message_text(msg['payload'])
              
         # Parse using Gemini
         extracted = _parse_email_with_gemini(subject, sender, body)

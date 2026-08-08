@@ -22,7 +22,7 @@ app = FastAPI(title="Spending Tea API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow local React development
+    allow_origins=os.getenv("FRONTEND_URL", "http://localhost:3000").split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -282,14 +282,35 @@ def google_callback(code: str, db: Session = Depends(get_db)):
     client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
     redirect_uri = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/google/callback")
     exchange_code_for_token(code, redirect_uri, client_id, client_secret, db, "srishti_user")
-    return RedirectResponse(url="http://localhost:3000?gmail_connected=true")
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
+    return RedirectResponse(url=f"{frontend_url}/connect?gmail_connected=true")
+
+@app.get("/api/gmail/status")
+def gmail_status(db: Session = Depends(get_db)):
+    from app.models import OAuthCredential
+    connected = db.query(OAuthCredential).filter(
+        OAuthCredential.user_id == "srishti_user", OAuthCredential.provider == "google"
+    ).first() is not None
+    return {"connected": connected}
 
 @app.post("/api/sync/gmail")
 def sync_gmail(db: Session = Depends(get_db)):
     try:
         parsed = fetch_recent_transaction_emails(db, "srishti_user")
         count = 0
+        skipped = 0
         for tx_data in parsed:
+            normalized = tx_data["merchant"].strip()
+            already_imported = db.query(Transaction).filter(
+                Transaction.user_id == "srishti_user",
+                Transaction.date == tx_data["date"],
+                Transaction.amount == abs(tx_data["amount"]),
+                Transaction.normalized_merchant.ilike(normalized),
+                Transaction.source == "gmail",
+            ).first()
+            if already_imported:
+                skipped += 1
+                continue
             ingest_transaction(
                 db, 
                 "srishti_user", 
@@ -301,6 +322,6 @@ def sync_gmail(db: Session = Depends(get_db)):
             )
             count += 1
         db.commit()
-        return {"status": "success", "synced_transactions": count}
+        return {"status": "success", "synced_transactions": count, "skipped_duplicates": skipped}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
